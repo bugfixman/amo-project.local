@@ -5,9 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use AmoCRM\Client\AmoCRMApiClient;
 use AmoCRM\Exceptions\AmoCRMoAuthApiException;
-use League\OAuth2\Client\Token\AccessToken;
-use Exception;
-use Illuminate\Support\Facades\Cache;
+use App\Service\TokenService;
 
 class MainController extends Controller
 {
@@ -57,72 +55,18 @@ class MainController extends Controller
             $accessToken = $this->clientApi->getOAuthClient()->getAccessTokenByCode($request->code);
 
             if (!$accessToken->hasExpired()) {
-                $this->saveToken([
+                TokenService::saveToken([
                     'accessToken' => $accessToken->getToken(),
                     'refreshToken' => $accessToken->getRefreshToken(),
                     'expires' => $accessToken->getExpires(),
                     'baseDomain' => $this->clientApi->getAccountBaseDomain(),
                 ]);
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return response($e->getMessage(), 500);
         }
 
         $ownerDetails = $this->clientApi->getOAuthClient()->getResourceOwner($accessToken);
         var_dump($ownerDetails);
-    }
-
-    /**
-     * @param array $accessToken
-     */
-    private function saveToken($accessToken)
-    {
-        if (
-            isset($accessToken)
-            && isset($accessToken['accessToken'])
-            && isset($accessToken['refreshToken'])
-            && isset($accessToken['expires'])
-            && isset($accessToken['baseDomain'])
-        ) {
-            $data = [
-                'accessToken' => $accessToken['accessToken'],
-                'expires' => $accessToken['expires'],
-                'refreshToken' => $accessToken['refreshToken'],
-                'baseDomain' => $accessToken['baseDomain'],
-            ];
-
-            Cache::forever('token', json_encode($data));
-        } else {
-            exit('Invalid access token ' . var_export($accessToken, true));
-        }
-    }
-
-    /**
-     * @return AccessToken
-     */
-    private function getToken()
-    {
-        if (!file_exists(TOKEN_FILE)) {
-            exit('Access token file not found');
-        }
-
-        $accessToken = json_decode(Cache::get('token'), true);
-
-        if (
-            isset($accessToken)
-            && isset($accessToken['accessToken'])
-            && isset($accessToken['refreshToken'])
-            && isset($accessToken['expires'])
-            && isset($accessToken['baseDomain'])
-        ) {
-            return new AccessToken([
-                'access_token' => $accessToken['accessToken'],
-                'refresh_token' => $accessToken['refreshToken'],
-                'expires' => $accessToken['expires'],
-                'baseDomain' => $accessToken['baseDomain'],
-            ]);
-        } else {
-            exit('Invalid access token ' . var_export($accessToken, true));
-        }
     }
 }
