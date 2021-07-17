@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\MainController;
 
 /*
@@ -16,3 +17,4 @@ use App\Http\Controllers\MainController;
 */
 
 Route::get('/auth', [MainController::class, 'auth']);
+Route::get('/createLead', [LeadController::class, 'createLead']);
