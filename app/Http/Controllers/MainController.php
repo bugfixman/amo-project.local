@@ -26,6 +26,10 @@ class MainController extends Controller
             $this->clientApi->setAccountBaseDomain($request->referer);
         }
 
+        if (!TokenService::getToken()->hasExpired()) {
+            return redirect('/');
+        }
+
         if (!$request->code) {
             $state = bin2hex(random_bytes(16));
             $request->session()->put('authState', $state);
@@ -61,12 +65,11 @@ class MainController extends Controller
                     'expires' => $accessToken->getExpires(),
                     'baseDomain' => $this->clientApi->getAccountBaseDomain(),
                 ]);
+
+                return redirect('/');
             }
-        } catch (\Exception $e) {
+        } catch (AmoCRMoAuthApiException $e) {
             return response($e->getMessage(), 500);
         }
-
-        $ownerDetails = $this->clientApi->getOAuthClient()->getResourceOwner($accessToken);
-        var_dump($ownerDetails);
     }
 }
