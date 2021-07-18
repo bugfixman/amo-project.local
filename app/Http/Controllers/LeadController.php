@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Service\TokenService;
 use App\Service\LeadService;
 use AmoCRM\Client\AmoCRMApiClient;
+use AmoCRM\Models\LeadModel;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 
 class LeadController extends Controller
@@ -34,10 +35,10 @@ class LeadController extends Controller
         );
     }
 
-    public function createLead(Request $request)
+    public function create(Request $request)
     {
         $data = [
-            'name' => 'Lead name',
+            'name' => 'Test name',
             'contact' => [
                 'first_name' => 'Ivan',
                 'last_name' => 'Zinoviev',
@@ -46,10 +47,14 @@ class LeadController extends Controller
             'company' => [
                 'name' => 'Qwerty LLC',
             ],
-            'tag' => 'Новый клиент',
-            //'external_id' => '0752a617-c834-4bde-b4a6-76ff0fe26871'
+            'tag' => 'Новый клиент'
         ];
 
         var_dump((new LeadService($this->clientApi))->create($data));
+    }
+
+    public function listLead()
+    {
+        return view('leads', ['leads' => $this->clientApi->leads()->get()]);
     }
 }
