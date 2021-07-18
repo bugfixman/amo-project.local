@@ -17,4 +17,5 @@ use App\Http\Controllers\MainController;
 */
 
 Route::get('/auth', [MainController::class, 'auth']);
-Route::get('/createLead', [LeadController::class, 'createLead']);
+Route::post('/create', [LeadController::class, 'create']);
+Route::get('/', [LeadController::class, 'listLead']);
