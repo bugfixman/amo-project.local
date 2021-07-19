@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use App\Service\TokenService;
 use App\Service\LeadService;
 use AmoCRM\Client\AmoCRMApiClient;
-use AmoCRM\Models\LeadModel;
+use AmoCRM\Exceptions\AmoCRMApiException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
+use Illuminate\Support\Facades\Validator;
 
 class LeadController extends Controller
 {
@@ -37,20 +38,45 @@ class LeadController extends Controller
 
     public function create(Request $request)
     {
-        $data = [
-            'name' => 'Test name',
-            'contact' => [
-                'first_name' => 'Ivan',
-                'last_name' => 'Zinoviev',
-                'phone' => '+79129876543',
-            ],
-            'company' => [
-                'name' => 'Qwerty LLC',
-            ],
-            'tag' => 'Новый клиент'
-        ];
+        $validator = Validator::make($request->all(), [
+            'name' => 'required',
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'phone' => 'required',
+            'company_name' => 'required',
+            'tag' => 'required'
+        ]);
 
-        var_dump((new LeadService($this->clientApi))->create($data));
+        if ($validator->fails()) {
+            return response([
+                'success' => false, 
+                'error_msg' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $addedLead = (new LeadService($this->clientApi))->create([
+                'name' => $request->name,
+                'contact' => [
+                    'first_name' => $request->first_name,
+                    'last_name' => $request->last_name,
+                    'phone' => $request->phone
+                ],
+                'company' => [
+                    'name' => $request->company_name
+                ],
+                'tag' => $request->tag
+            ]);
+            return response([
+                'success' => true, 
+                'lead_id' => $addedLead[0]->getId()
+            ], 200);
+        } catch (AmoCRMApiException $e) {
+            return response([
+                'success' => false, 
+                'error_msg' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function listLead()
