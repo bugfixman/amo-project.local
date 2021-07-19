@@ -93,7 +93,7 @@
         #open-create-lead-modal {
             border: 0;
             cursor: pointer;
-            padding: 10px 15px;
+            padding: 10px 14px;
             background: #18bb61;
             border-radius: 50%;
             position: absolute;
