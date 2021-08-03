@@ -26,10 +26,6 @@ class MainController extends Controller
             $this->clientApi->setAccountBaseDomain($request->referer);
         }
 
-        if (!TokenService::getToken()->hasExpired()) {
-            return redirect('/');
-        }
-
         if (!$request->code) {
             $state = bin2hex(random_bytes(16));
             $request->session()->put('authState', $state);
@@ -42,6 +38,7 @@ class MainController extends Controller
                     'color' => 'default',
                     'error_callback' => 'handleOauthError',
                     'state' => $state,
+                    'mode' => 'popup'
                 ]
             );
 

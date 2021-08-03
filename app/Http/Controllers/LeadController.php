@@ -7,6 +7,7 @@ use App\Service\TokenService;
 use App\Service\LeadService;
 use AmoCRM\Client\AmoCRMApiClient;
 use AmoCRM\Exceptions\AmoCRMApiException;
+use AmoCRM\Exceptions\AmoCRMApiNoContentException;
 use League\OAuth2\Client\Token\AccessTokenInterface;
 use Illuminate\Support\Facades\Validator;
 
@@ -81,6 +82,12 @@ class LeadController extends Controller
 
     public function listLead()
     {
-        return view('leads', ['leads' => $this->clientApi->leads()->get()]);
+        try {
+            return view('leads', [
+                'leads' => $this->clientApi->leads()->get()
+            ]);
+        } catch (AmoCRMApiNoContentException $e) {
+            return view('leads', ['leads' => []]);
+        }
     }
 }
