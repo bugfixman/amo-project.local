@@ -68,6 +68,7 @@ class LeadController extends Controller
                 ],
                 'tag' => $request->tag
             ]);
+
             return response([
                 'success' => true, 
                 'lead_id' => $addedLead[0]->getId()
